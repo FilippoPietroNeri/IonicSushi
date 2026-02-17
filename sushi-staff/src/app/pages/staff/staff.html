@@ -1,0 +1,244 @@
+<div class="dashboard">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <span class="logo-icon">🍣</span>
+        <h1 class="dashboard-title">Ionic Sushi - Cucina</h1>
+      </div>
+      
+      <div class="header-stats">
+        <div class="stat-card stat-total">
+          <span class="stat-value">{{ stats().totale }}</span>
+          <span class="stat-label">Totali</span>
+        </div>
+        <div class="stat-card stat-new">
+          <span class="stat-value">{{ stats().ordinati }}</span>
+          <span class="stat-label">Nuovi</span>
+        </div>
+        <div class="stat-card stat-cooking">
+          <span class="stat-value">{{ stats().inPreparazione }}</span>
+          <span class="stat-label">In Cucina</span>
+        </div>
+        <div class="stat-card stat-ready">
+          <span class="stat-value">{{ stats().pronti }}</span>
+          <span class="stat-label">Pronti</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        placeholder="Cerca per tavolo o cliente..."
+        [(ngModel)]="searchTavolo"
+        (ngModelChange)="searchTavolo.set($event)"
+        class="search-input"
+      />
+    </div>
+    
+    <div class="filter-buttons">
+      <button 
+        class="filter-btn" 
+        [class.active]="filtroStato() === 'tutti'"
+        (click)="filtroStato.set('tutti')">
+        Tutti
+      </button>
+      <button 
+        class="filter-btn filter-ordinato" 
+        [class.active]="filtroStato() === 'ordinato'"
+        (click)="filtroStato.set('ordinato')">
+        Ordinati
+      </button>
+      <button 
+        class="filter-btn filter-preparazione" 
+        [class.active]="filtroStato() === 'in_preparazione'"
+        (click)="filtroStato.set('in_preparazione')">
+        In Cucina
+      </button>
+      <button 
+        class="filter-btn filter-pronto" 
+        [class.active]="filtroStato() === 'pronto'"
+        (click)="filtroStato.set('pronto')">
+        Pronti
+      </button>
+    </div>
+
+    <div class="view-toggle">
+      <button 
+        class="toggle-btn"
+        [class.active]="viewMode() === 'kanban'"
+        (click)="viewMode.set('kanban')"
+        title="Vista Kanban">
+        📋
+      </button>
+      <button 
+        class="toggle-btn"
+        [class.active]="viewMode() === 'list'"
+        (click)="viewMode.set('list')"
+        title="Vista Lista">
+        📝
+      </button>
+    </div>
+  </div>
+
+  <!-- Kanban View -->
+  <div class="kanban-view" *ngIf="viewMode() === 'kanban'">
+    <div class="kanban-column">
+      <div class="column-header column-ordinato">
+        <span class="column-icon">🔔</span>
+        <h2 class="column-title">Ordinati</h2>
+        <span class="column-count">{{ ordiniOrdinati().length }}</span>
+      </div>
+      <div class="column-content">
+        <div class="order-card" *ngFor="let ordine of ordiniOrdinati()">
+          <div class="card-header">
+            <div class="table-badge">{{ ordine.codice_tavolo }}</div>
+            <span class="customer-name">{{ ordine.nome_cliente }}</span>
+          </div>
+          <div class="card-body">
+            <div class="product-info">
+              <span class="product-icon">{{ getCategoryIcon(ordine.categoria) }}</span>
+              <div class="product-details">
+                <h3 class="product-name">{{ ordine.nome }}</h3>
+                <span class="product-quantity">Quantità: {{ ordine.quantita }}</span>
+              </div>
+            </div>
+          </div>
+          <button class="action-btn btn-preparazione" (click)="avanzaStato(ordine)">
+            👨‍🍳 Inizia Preparazione
+          </button>
+        </div>
+        <div class="empty-column" *ngIf="ordiniOrdinati().length === 0">
+          Nessun ordine
+        </div>
+      </div>
+    </div>
+
+    <div class="kanban-column">
+      <div class="column-header column-preparazione">
+        <span class="column-icon">👨‍🍳</span>
+        <h2 class="column-title">In Cucina</h2>
+        <span class="column-count">{{ ordiniInPreparazione().length }}</span>
+      </div>
+      <div class="column-content">
+        <div class="order-card cooking" *ngFor="let ordine of ordiniInPreparazione()">
+          <div class="card-header">
+            <div class="table-badge">{{ ordine.codice_tavolo }}</div>
+            <span class="customer-name">{{ ordine.nome_cliente }}</span>
+          </div>
+          <div class="card-body">
+            <div class="product-info">
+              <span class="product-icon">{{ getCategoryIcon(ordine.categoria) }}</span>
+              <div class="product-details">
+                <h3 class="product-name">{{ ordine.nome }}</h3>
+                <span class="product-quantity">Quantità: {{ ordine.quantita }}</span>
+              </div>
+            </div>
+          </div>
+          <button class="action-btn btn-pronto" (click)="avanzaStato(ordine)">
+            ✅ Segna Pronto
+          </button>
+        </div>
+        <div class="empty-column" *ngIf="ordiniInPreparazione().length === 0">
+          Nessun ordine
+        </div>
+      </div>
+    </div>
+
+    <div class="kanban-column">
+      <div class="column-header column-pronto">
+        <span class="column-icon">✨</span>
+        <h2 class="column-title">Pronti</h2>
+        <span class="column-count">{{ ordiniPronti().length }}</span>
+      </div>
+      <div class="column-content">
+        <div class="order-card ready" *ngFor="let ordine of ordiniPronti()">
+          <div class="card-header">
+            <div class="table-badge">{{ ordine.codice_tavolo }}</div>
+            <span class="customer-name">{{ ordine.nome_cliente }}</span>
+          </div>
+          <div class="card-body">
+            <div class="product-info">
+              <span class="product-icon">{{ getCategoryIcon(ordine.categoria) }}</span>
+              <div class="product-details">
+                <h3 class="product-name">{{ ordine.nome }}</h3>
+                <span class="product-quantity">Quantità: {{ ordine.quantita }}</span>
+              </div>
+            </div>
+          </div>
+          <button class="action-btn btn-servito" (click)="avanzaStato(ordine)">
+            🍽️ Segna Servito
+          </button>
+        </div>
+        <div class="empty-column" *ngIf="ordiniPronti().length === 0">
+          Nessun ordine
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div class="list-view" *ngIf="viewMode() === 'list'">
+    <div class="order-list-item" *ngFor="let ordine of ordiniFiltrati()" [attr.data-stato]="ordine.stato">
+      <div class="list-item-header">
+        <div class="list-table-info">
+          <span class="list-table-badge">{{ ordine.codice_tavolo }}</span>
+          <span class="list-customer">{{ ordine.nome_cliente }}</span>
+        </div>
+        <div class="list-status" [class]="'status-' + ordine.stato">
+          <span class="status-dot"></span>
+          <span class="status-text">
+            {{ ordine.stato === 'ordinato' ? 'Ordinato' : 
+               ordine.stato === 'in_preparazione' ? 'In Cucina' :
+               ordine.stato === 'pronto' ? 'Pronto' : 'Servito' }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="list-item-body">
+        <span class="list-product-icon">{{ getCategoryIcon(ordine.categoria) }}</span>
+        <div class="list-product-info">
+          <h3 class="list-product-name">{{ ordine.nome }}</h3>
+          <span class="list-product-qty">x{{ ordine.quantita }}</span>
+        </div>
+      </div>
+
+      <div class="list-item-actions">
+        <button 
+          *ngIf="ordine.stato === 'ordinato'"
+          class="list-action-btn btn-preparazione"
+          (click)="cambiaStato(ordine.riga_id, 'in_preparazione')">
+          👨‍🍳 In Cucina
+        </button>
+        <button 
+          *ngIf="ordine.stato === 'in_preparazione'"
+          class="list-action-btn btn-pronto"
+          (click)="cambiaStato(ordine.riga_id, 'pronto')">
+          ✅ Pronto
+        </button>
+        <button 
+          *ngIf="ordine.stato === 'pronto'"
+          class="list-action-btn btn-servito"
+          (click)="cambiaStato(ordine.riga_id, 'servito')">
+          🍽️ Servito
+        </button>
+        <button 
+          *ngIf="ordine.stato === 'servito'"
+          class="list-action-btn btn-completed"
+          disabled>
+          ✓ Completato
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="ordiniFiltrati().length === 0">
+      <span class="empty-icon">📭</span>
+      <p class="empty-text">Nessun ordine trovato</p>
+    </div>
+  </div>
+</div>

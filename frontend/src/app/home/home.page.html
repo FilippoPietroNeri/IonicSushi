@@ -1,12 +1,66 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Sushi 🍣</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" class="home-content">
+  <div class="japanese-pattern"></div>
+  
+  <div class="welcome-container">
+    <div class="hero-section">
+      <div class="logo-circle">
+        <div class="sushi-emoji">🍣</div>
+      </div>
+      <h1 class="welcome-title">
+        <span class="japanese-text">寿司</span>
+        <span class="app-title">Sushi Restaurant</span>
+      </h1>
+      <p class="welcome-subtitle">Autentica cucina giapponese</p>
+    </div>
 
-<ion-content class="ion-padding">
-  <ion-input placeholder="Codice tavolo" [(ngModel)]="codiceTavolo"></ion-input>
-  <ion-input placeholder="Il tuo nome" [(ngModel)]="nome"></ion-input>
+    <div class="form-container">
+      <div class="form-header">
+        <ion-icon name="location-outline"></ion-icon>
+        <span>Accesso al tavolo</span>
+      </div>
 
-  <ion-button expand="block" (click)="entra()">Entra</ion-button>
+      <div class="input-group">
+        <div class="input-wrapper">
+          <div class="input-label">
+            <ion-icon name="qr-code-outline"></ion-icon>
+            <span>Codice Tavolo</span>
+          </div>
+          <ion-input 
+            placeholder="Es: T01, T02..." 
+            [(ngModel)]="codiceTavolo"
+            class="custom-input"
+            type="text"
+          ></ion-input>
+        </div>
+
+        <div class="input-wrapper">
+          <div class="input-label">
+            <ion-icon name="person-outline"></ion-icon>
+            <span>Nome</span>
+          </div>
+          <ion-input 
+            placeholder="Il tuo nome" 
+            [(ngModel)]="nome"
+            class="custom-input"
+            type="text"
+          ></ion-input>
+        </div>
+      </div>
+
+      <ion-button 
+        expand="block" 
+        (click)="entra()"
+        class="enter-button"
+        [disabled]="!codiceTavolo || !nome"
+      >
+        <span>Inizia Ordine</span>
+        <ion-icon name="arrow-forward" slot="end"></ion-icon>
+      </ion-button>
+
+      <div class="footer-info">
+        <ion-icon name="restaurant-outline"></ion-icon>
+        <span>Benvenuto nel nostro ristorante</span>
+      </div>
+    </div>
+  </div>
 </ion-content>

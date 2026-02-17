@@ -14,6 +14,7 @@ def menu():
 @app.route("/ordine", methods=["POST"])
 def crea_ordine():
     data = request.json
+    print(data)
     ordine_id = db.crea_ordine(
         data["codice_tavolo"],
         data["nome_cliente"],
@@ -25,11 +26,22 @@ def crea_ordine():
 def ordini_tavolo(codice_tavolo):
     return jsonify(db.get_ordini_by_tavolo(codice_tavolo))
 
+@app.route("/ordini", methods=["GET"])
+def tutti_ordini():
+    return jsonify(db.get_tutti_ordini())
+
 @app.route("/ordine/<int:ordine_id>/stato", methods=["PUT"])
 def aggiorna_stato(ordine_id):
     stato = request.json["stato"]
     db.aggiorna_stato_ordine(ordine_id, stato)
     return jsonify({"status": "ok"})
+
+@app.route("/riga-ordine/<int:riga_id>/stato", methods=["PUT"])
+def aggiorna_stato_riga(riga_id):
+    stato = request.json["stato"]
+    db.aggiorna_stato_riga(riga_id, stato)
+    return jsonify({"status": "ok"})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -50,7 +50,11 @@ export class MenuPage implements OnInit {
 
   ngOnInit() {
     this.api.getMenu().subscribe(data => {
-      this.menu.set(data);
+      const items = data.map(item => ({
+        ...item,
+        immagineUrl: this.resolveImageUrl(item.immagine)
+      }));
+      this.menu.set(items);
     });
   }
 
@@ -82,6 +86,50 @@ export class MenuPage implements OnInit {
   onCategoriaChange(event: CustomEvent) {
     const value = (event.detail as { value?: string }).value;
     this.selectedCategoria.set(value ?? 'Tutte');
+  }
+
+  getCategoryIcon(categoria: string): string {
+    const icons: { [key: string]: string } = {
+      'Nigiri': '🍣',
+      'Sashimi': '🐟',
+      'Maki': '🍙',
+      'Uramaki': '🌯',
+      'Gunkan': '⛵',
+      'Temaki': '🎋',
+      'Hosomaki': '🥢',
+      'Futomaki': '🎍',
+      'Tataki': '🔥',
+      'Carpaccio': '🥩',
+      'Antipasti': '🥗',
+      'Tempura': '🍤',
+      'Ramen': '🍜',
+      'Gyoza': '🥟',
+      'Dolci': '🍡',
+      'Bevande': '🍵'
+    };
+    return icons[categoria] || '🍱';
+  }
+
+  onImageError(event: any) {
+    if (event?.immagineUrl !== undefined) {
+      event.immagineUrl = '';
+    }
+  }
+
+  resolveImageUrl(path: string | null | undefined) {
+    if (!path) {
+      return '';
+    }
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+      return path;
+    }
+    if (path.startsWith('/assets/') || path.startsWith('assets/')) {
+      return path.startsWith('/') ? path : `/${path}`;
+    }
+    if (path.startsWith('/')) {
+      return `${this.api.baseUrl}${path}`;
+    }
+    return `${this.api.baseUrl}/${path}`;
   }
 
   private buildGroups(items: any[]) {

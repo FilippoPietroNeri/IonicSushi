@@ -1,0 +1,20 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Stato ordine 🍣</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-list>
+    <ion-item *ngFor="let o of ordini">
+      <ion-label>
+        <h2>{{ o.nome }} x{{ o.quantita }}</h2>
+        <p [ngClass]="o.stato">
+          {{ o.stato }}
+        </p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

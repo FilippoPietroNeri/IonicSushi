@@ -6,6 +6,7 @@ type CartItem = {
   prezzo: number;
   quantita: number;
   immagine?: string;
+  immagineUrl?: string;
 };
 
 @Injectable({
@@ -40,6 +41,7 @@ export class CartService {
           nome: product.nome,
           prezzo: product.prezzo,
           immagine: product.immagine,
+          immagineUrl: product.immagineUrl ?? product.immagine,
           quantita: 1,
         },
       ];

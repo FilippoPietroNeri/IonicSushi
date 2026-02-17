@@ -1,50 +1,189 @@
-<ion-header>
-  <ion-toolbar class="cart-toolbar">
+<ion-header [translucent]="true">
+  <ion-toolbar color="dark">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/menu"></ion-back-button>
+      <ion-back-button defaultHref="/menu" class="back-btn">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-back-button>
     </ion-buttons>
-    <ion-title>Carrello</ion-title>
+    <ion-title class="header-title">
+      <span class="japanese-text">🛒</span>
+      Carrello
+    </ion-title>
     <ion-buttons slot="end">
-      <ion-badge class="cart-badge" *ngIf="cartCount() > 0">{{ cartCount() }}</ion-badge>
+      <div class="header-badge" *ngIf="cartCount() > 0">
+        <span>{{ cartCount() }}</span>
+      </div>
     </ion-buttons>
+  </ion-toolbar>
+  
+  <ion-toolbar color="dark">
+    <ion-segment [value]="selectedView()" (ionChange)="onSegmentChange($event)" mode="md">
+      <ion-segment-button value="carrello">
+        <ion-label>
+          <ion-icon name="cart-outline"></ion-icon>
+          Carrello
+        </ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="ordini">
+        <ion-label>
+          <ion-icon name="receipt-outline"></ion-icon>
+          I Tuoi Ordini
+        </ion-label>
+      </ion-segment-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding cart-content">
-  <ng-container *ngIf="cartItems().length > 0; else emptyCart">
-    <ion-card class="cart-card" *ngFor="let item of cartItems()">
-      <div class="cart-row">
-        <div class="cart-left">
-          <img *ngIf="item.immagine" [src]="item.immagine" class="cart-thumb" alt="" />
-          <ion-icon *ngIf="!item.immagine" name="fast-food" class="cart-icon"></ion-icon>
-        </div>
-        <div class="cart-info">
-          <div class="cart-title">{{ item.nome }}</div>
-          <div class="cart-price">{{ item.prezzo }} €</div>
-        </div>
-        <div class="cart-actions">
-          <ion-button fill="clear" size="small" (click)="decrement(item)">-</ion-button>
-          <span class="cart-qty">{{ item.quantita }}</span>
-          <ion-button fill="clear" size="small" (click)="increment(item)">+</ion-button>
+<ion-content [fullscreen]="true" class="cart-content">
+  <!-- Vista Carrello -->
+  <ng-container *ngIf="selectedView() === 'carrello'">
+    <ng-container *ngIf="cartItems().length > 0; else emptyCart">
+    <div class="cart-container">
+      <!-- Lista prodotti -->
+      <div class="cart-items">
+        <div class="cart-item" *ngFor="let item of cartItems(); let i = index" 
+             [style.animation-delay]="i * 0.05 + 's'">
+          <div class="item-image-wrapper">
+            <img 
+              *ngIf="item.immagine" 
+              [src]="item.immagine" 
+              [alt]="item.nome"
+              class="item-image"
+              loading="lazy"
+              (error)="onImageError($event)"
+            />
+            <div *ngIf="!item.immagine" class="item-placeholder">
+              <ion-icon name="restaurant-outline"></ion-icon>
+            </div>
+            <div class="item-badge">{{ item.quantita }}</div>
+          </div>
+
+          <div class="item-details">
+            <h3 class="item-name">{{ item.nome }}</h3>
+            <div class="item-price-line">
+              <span class="unit-price">€ {{ item.prezzo }}</span>
+              <span class="multiply">×</span>
+              <span class="quantity">{{ item.quantita }}</span>
+            </div>
+            <div class="item-total">
+              Totale: <span class="total-price">€ {{ (item.prezzo * item.quantita) }}</span>
+            </div>
+          </div>
+
+          <div class="item-controls">
+            <button class="control-btn minus" (click)="decrement(item)">
+              <ion-icon name="remove"></ion-icon>
+            </button>
+            <div class="quantity-display">{{ item.quantita }}</div>
+            <button class="control-btn plus" (click)="increment(item)">
+              <ion-icon name="add"></ion-icon>
+            </button>
+          </div>
         </div>
       </div>
-    </ion-card>
 
-    <div class="cart-total">
-      <span>Totale</span>
-      <span>{{ totale() | number:'1.2-2' }} €</span>
+      <!-- Riepilogo -->
+      <div class="cart-summary">
+        <div class="summary-header">
+          <ion-icon name="receipt-outline"></ion-icon>
+          <span>Riepilogo Ordine</span>
+        </div>
+        
+        <div class="summary-row">
+          <span>Prodotti ({{ cartCount() }})</span>
+          <span>€ {{ totale() }}</span>
+        </div>
+        
+        <div class="summary-divider"></div>
+        
+        <div class="summary-row total">
+          <span>Totale</span>
+          <span class="total-amount">€ {{ totale() }}</span>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
     </div>
 
-    <ion-button expand="block" color="success" (click)="inviaOrdine()">
-      Invia ordine
-    </ion-button>
+    <!-- Bottone fisso -->
+    <div class="floating-action">
+      <ion-button expand="block" class="order-button" (click)="inviaOrdine()">
+        <div class="order-button-content">
+          <div class="button-icon">
+            <ion-icon name="checkmark-circle"></ion-icon>
+          </div>
+          <div class="button-text">
+            <span class="button-label">Conferma Ordine</span>
+            <span class="button-subtitle">€ {{ totale() }}</span>
+          </div>
+          <div class="button-arrow">
+            <ion-icon name="arrow-forward"></ion-icon>
+          </div>
+        </div>
+      </ion-button>
+    </div>
   </ng-container>
 
   <ng-template #emptyCart>
-    <div class="cart-empty">
-      <ion-icon name="cart-outline"></ion-icon>
-      <p>Il carrello e vuoto.</p>
-      <ion-button routerLink="/menu">Torna al menu</ion-button>
+    <div class="empty-cart">
+      <div class="empty-icon-wrapper">
+        <div class="empty-circle">
+          <ion-icon name="cart-outline"></ion-icon>
+        </div>
+      </div>
+      <h2 class="empty-title">Carrello vuoto</h2>
+      <p class="empty-text">Non hai ancora aggiunto nessun prodotto al tuo ordine</p>
+      <ion-button class="back-to-menu" routerLink="/menu">
+        <ion-icon name="restaurant-outline" slot="start"></ion-icon>
+        Esplora il Menu
+      </ion-button>
     </div>
   </ng-template>
+  </ng-container>
+
+  <!-- Vista Ordini -->
+  <ng-container *ngIf="selectedView() === 'ordini'">
+    <div class="orders-container" *ngIf="ordini().length > 0; else noOrders">
+      <div class="orders-header">
+        <ion-icon name="receipt"></ion-icon>
+        <h2>I Tuoi Ordini</h2>
+        <p>Tavolo {{ codiceTavolo() }}</p>
+      </div>
+
+      <div class="order-item" *ngFor="let ordine of ordini(); let i = index"
+           [style.animation-delay]="i * 0.05 + 's'">
+        <div class="order-content">
+          <div class="order-info">
+            <h3 class="order-product">{{ ordine.nome }}</h3>
+            <p class="order-quantity">Quantità: {{ ordine.quantita }}</p>
+          </div>
+          
+          <div class="order-status" [attr.data-status]="ordine.stato">
+            <ion-icon [name]="getStatoIcon(ordine.stato)"></ion-icon>
+            <span>{{ getStatoText(ordine.stato) }}</span>
+          </div>
+        </div>
+        
+        <div class="order-progress">
+          <div class="progress-bar" [attr.data-status]="ordine.stato"></div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noOrders>
+      <div class="empty-cart">
+        <div class="empty-icon-wrapper">
+          <div class="empty-circle">
+            <ion-icon name="receipt-outline"></ion-icon>
+          </div>
+        </div>
+        <h2 class="empty-title">Nessun ordine</h2>
+        <p class="empty-text">Non hai ancora effettuato ordini</p>
+        <ion-button class="back-to-menu" routerLink="/menu">
+          <ion-icon name="restaurant-outline" slot="start"></ion-icon>
+          Vai al Menu
+        </ion-button>
+      </div>
+    </ng-template>
+  </ng-container>
 </ion-content>

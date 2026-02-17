@@ -79,6 +79,7 @@ class DatabaseWrapper:
                 ordine_id INT,
                 prodotto_id INT,
                 quantita INT,
+                stato VARCHAR(20) DEFAULT 'ordinato',
                 FOREIGN KEY (ordine_id) REFERENCES Ordini(id),
                 FOREIGN KEY (prodotto_id) REFERENCES Prodotti(id)
             )
@@ -126,33 +127,79 @@ class DatabaseWrapper:
     def crea_ordine(self, codice_tavolo, nome_cliente, prodotti):
         tavolo_id = self.get_or_create_tavolo(codice_tavolo)
 
-        self.execute_query("""
-            INSERT INTO Ordini (tavolo_id, nome_cliente)
-            VALUES (%s, %s)
-        """, (tavolo_id, nome_cliente))
+        conn = self.connect()
+        try:
+            with conn.cursor() as cursor:
+                # Insert ordine
+                cursor.execute("""
+                    INSERT INTO Ordini (tavolo_id, nome_cliente)
+                    VALUES (%s, %s)
+                """, (tavolo_id, nome_cliente))
+                
+                ordine_id = cursor.lastrowid
+                
+                # Insert righe ordine
+                for p in prodotti:
+                    cursor.execute("""
+                        INSERT INTO RigheOrdine (ordine_id, prodotto_id, quantita, stato)
+                        VALUES (%s, %s, %s, 'ordinato')
+                    """, (ordine_id, p["prodotto_id"], p["quantita"]))
+                
+                conn.commit()
+                return ordine_id
+        finally:
+            conn.close()
 
-        ordine_id = self.fetch_query(
-            "SELECT LAST_INSERT_ID() AS id"
-        )[0]["id"]
-
-        for p in prodotti:
-            self.execute_query("""
-                INSERT INTO RigheOrdine (ordine_id, prodotto_id, quantita)
-                VALUES (%s, %s, %s)
-            """, (ordine_id, p["prodotto_id"], p["quantita"]))
-
-        return ordine_id
 
     def get_ordini_by_tavolo(self, codice):
         return self.fetch_query("""
-            SELECT Ordini.id, Ordini.nome_cliente, Ordini.stato,
-                   Prodotti.nome, RigheOrdine.quantita
+            SELECT
+                RigheOrdine.id AS riga_id,
+                Ordini.id AS ordine_id,
+                Ordini.nome_cliente,
+                Tavoli.codice AS codice_tavolo,
+                Prodotti.nome,
+                RigheOrdine.quantita,
+                RigheOrdine.stato
             FROM Ordini
             JOIN Tavoli ON Ordini.tavolo_id = Tavoli.id
             JOIN RigheOrdine ON Ordini.id = RigheOrdine.ordine_id
             JOIN Prodotti ON RigheOrdine.prodotto_id = Prodotti.id
-            WHERE Tavoli.codice=%s
+            WHERE Tavoli.codice = %s
+            ORDER BY RigheOrdine.id DESC
         """, (codice,))
+
+    def get_tutti_ordini(self):
+        return self.fetch_query("""
+            SELECT
+                RigheOrdine.id AS riga_id,
+                Ordini.id AS ordine_id,
+                Ordini.nome_cliente,
+                Tavoli.codice AS codice_tavolo,
+                Prodotti.nome,
+                Prodotti.immagine,
+                Categorie.nome AS categoria,
+                RigheOrdine.quantita,
+                RigheOrdine.stato
+            FROM Ordini
+            JOIN Tavoli ON Ordini.tavolo_id = Tavoli.id
+            JOIN RigheOrdine ON Ordini.id = RigheOrdine.ordine_id
+            JOIN Prodotti ON RigheOrdine.prodotto_id = Prodotti.id
+            LEFT JOIN Categorie ON Prodotti.categoria_id = Categorie.id
+            ORDER BY 
+                CASE RigheOrdine.stato
+                    WHEN 'ordinato' THEN 1
+                    WHEN 'in_preparazione' THEN 2
+                    WHEN 'pronto' THEN 3
+                    WHEN 'servito' THEN 4
+                END,
+                RigheOrdine.id DESC
+        """)
+
+    def aggiorna_stato_riga(self, riga_id, stato):
+        self.execute_query("""
+            UPDATE RigheOrdine SET stato=%s WHERE id=%s
+        """, (stato, riga_id))
 
     def aggiorna_stato_ordine(self, ordine_id, stato):
         self.execute_query("""
