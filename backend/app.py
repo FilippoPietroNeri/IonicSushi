@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
 from DatabaseWrapper import DatabaseWrapper
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 db = DatabaseWrapper()
 

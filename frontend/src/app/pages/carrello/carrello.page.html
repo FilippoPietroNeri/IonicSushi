@@ -1,0 +1,50 @@
+<ion-header>
+  <ion-toolbar class="cart-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/menu"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Carrello</ion-title>
+    <ion-buttons slot="end">
+      <ion-badge class="cart-badge" *ngIf="cartCount() > 0">{{ cartCount() }}</ion-badge>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding cart-content">
+  <ng-container *ngIf="cartItems().length > 0; else emptyCart">
+    <ion-card class="cart-card" *ngFor="let item of cartItems()">
+      <div class="cart-row">
+        <div class="cart-left">
+          <img *ngIf="item.immagine" [src]="item.immagine" class="cart-thumb" alt="" />
+          <ion-icon *ngIf="!item.immagine" name="fast-food" class="cart-icon"></ion-icon>
+        </div>
+        <div class="cart-info">
+          <div class="cart-title">{{ item.nome }}</div>
+          <div class="cart-price">{{ item.prezzo }} €</div>
+        </div>
+        <div class="cart-actions">
+          <ion-button fill="clear" size="small" (click)="decrement(item)">-</ion-button>
+          <span class="cart-qty">{{ item.quantita }}</span>
+          <ion-button fill="clear" size="small" (click)="increment(item)">+</ion-button>
+        </div>
+      </div>
+    </ion-card>
+
+    <div class="cart-total">
+      <span>Totale</span>
+      <span>{{ totale() | number:'1.2-2' }} €</span>
+    </div>
+
+    <ion-button expand="block" color="success" (click)="inviaOrdine()">
+      Invia ordine
+    </ion-button>
+  </ng-container>
+
+  <ng-template #emptyCart>
+    <div class="cart-empty">
+      <ion-icon name="cart-outline"></ion-icon>
+      <p>Il carrello e vuoto.</p>
+      <ion-button routerLink="/menu">Torna al menu</ion-button>
+    </div>
+  </ng-template>
+</ion-content>

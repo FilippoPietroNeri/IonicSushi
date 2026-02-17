@@ -1,0 +1,108 @@
+
+.menu-toolbar {
+	--padding-start: 12px;
+	--padding-end: 12px;
+}
+
+.menu-logo {
+	font-size: 22px;
+	color: #f47c3c;
+}
+
+.cart-button {
+	position: relative;
+}
+
+.cart-badge {
+	position: absolute;
+	top: -4px;
+	right: -6px;
+	font-size: 11px;
+}
+
+.cart-pulse .cart-badge {
+	animation: cart-bounce 0.3s ease;
+}
+
+@keyframes cart-bounce {
+	0% { transform: scale(1); }
+	50% { transform: scale(1.25); }
+	100% { transform: scale(1); }
+}
+
+.menu-filters {
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.categoria-title {
+	margin: 18px 4px 10px;
+	font-size: 16px;
+	font-weight: 600;
+	color: inherit;
+}
+
+.menu-card {
+	margin: 0 0 12px;
+	border-radius: 16px;
+	box-shadow: 0 12px 24px rgba(31, 42, 68, 0.08);
+}
+
+.menu-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 14px;
+}
+
+.menu-left {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	border-radius: 14px;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.menu-thumb {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.menu-icon {
+	font-size: 26px;
+	color: #f47c3c;
+}
+
+.menu-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.menu-title {
+	font-size: 15px;
+	font-weight: 600;
+	color: inherit;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.menu-price {
+	margin-top: 4px;
+	font-size: 13px;
+	color: #f47c3c;
+	font-weight: 600;
+}
+
+.menu-add {
+	--border-radius: 999px;
+	--padding-start: 14px;
+	--padding-end: 14px;
+}
+
+.menu-submit {
+	margin-top: 18px;
+}
